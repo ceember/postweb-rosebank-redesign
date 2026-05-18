@@ -33,13 +33,16 @@ const bundles = [
 ]
 const photoRows = ['LinkedIn Headshot|One polished profile photo, digital file and print-ready crop|R150','Professional Headshot Plus|Four variations: corporate, warm, studio, monochrome|R250','Executive Pack|Eight executive portraits with retouching and usage crops|R450','Family Portrait Mini|Three AI-assisted family portraits from one in-store session|R250','Family Portrait Full|Ten portraits, digital gallery and two printed photos|R650','Matric Dance Portrait|Styled single portrait and social-ready gallery crops|R350','Matric Dance Couple|Couple set, cinematic portraits and print-ready keepsake|R600','Maternity Portrait|Soft studio-inspired maternity set, six finished images|R450','Baby Milestone|Six baby milestone portraits with print-ready files|R350','Brand Founder Shoot|Founder portraits for WhatsApp, LinkedIn and flyers|R550','Product Mini|Five clean product shots for WhatsApp catalogue listings|R300','Product Full|Fifteen product shots with cleanup and captions|R900','Church Leader Portrait|Formal portrait pack for programmes and announcements|R250','Sports Club Pack|Player portrait with team-colour treatment and print file|R200','School Learner Pack|Learner portrait, certificate crop and parent-order file|R350','Bulk Event Pack|Priced per brief for schools, churches and club days|Quote'].map(x=>x.split('|'))
 
+const BASE = import.meta.env.BASE_URL.replace(/\/$/,'')
+const stripBase = (pathname:string) => BASE && pathname === BASE ? '/' : BASE && pathname.startsWith(`${BASE}/`) ? pathname.slice(BASE.length) || '/' : pathname
+const withBase = (route:string) => BASE ? `${BASE}${route}` : route
 function App(){
-  const [path,setPath]=useState(location.pathname)
+  const [path,setPath]=useState(stripBase(location.pathname))
   const [hide,setHide]=useState(false)
   const [mega,setMega]=useState(false)
-  useEffect(()=>{const p=()=>setPath(location.pathname); addEventListener('popstate',p); return()=>removeEventListener('popstate',p)},[])
+  useEffect(()=>{const p=()=>setPath(stripBase(location.pathname)); addEventListener('popstate',p); return()=>removeEventListener('popstate',p)},[])
   useEffect(()=>{let last=scrollY; const s=()=>{setHide(scrollY>120&&scrollY>last); last=scrollY}; addEventListener('scroll',s,{passive:true}); return()=>removeEventListener('scroll',s)},[])
-  useEffect(()=>{const c=(e:MouseEvent)=>{const a=(e.target as HTMLElement).closest('a') as HTMLAnchorElement|null; if(!a)return; const u=new URL(a.href); if(u.origin!==location.origin)return; e.preventDefault(); history.pushState({},'',u.pathname); setPath(u.pathname); setMega(false); scrollTo({top:0,behavior:'smooth'})}; document.addEventListener('click',c); return()=>document.removeEventListener('click',c)},[])
+  useEffect(()=>{const c=(e:MouseEvent)=>{const a=(e.target as HTMLElement).closest('a') as HTMLAnchorElement|null; if(!a)return; const u=new URL(a.href); if(u.origin!==location.origin)return; const route=stripBase(u.pathname); e.preventDefault(); history.pushState({},'',withBase(route)); setPath(route); setMega(false); scrollTo({top:0,behavior:'smooth'})}; document.addEventListener('click',c); return()=>document.removeEventListener('click',c)},[])
   return <><Header hide={hide} mega={mega} setMega={setMega}/><main>{page(path)}</main><Footer/><a className="wa-float" href="https://wa.me/27XXXXXXXXX?text=Hi%20Post%40WEB%2C%20I'd%20like%20to%20know%20more%20about...">+27<br/>XX</a></>
 }
 function Header({hide,mega,setMega}:{hide:boolean;mega:boolean;setMega:(v:boolean)=>void}){
